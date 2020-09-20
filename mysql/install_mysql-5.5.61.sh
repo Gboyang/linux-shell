@@ -48,7 +48,7 @@ touch $my_log/my_err.log
 chown -R $my_user.$my_user /application/mysql/*
 cat >/etc/my.cnf <<EOF
 [mysql]
-# Terminal style
+default-character-set = utf8
 prompt=[\\u@db1 \\r:\\m:\\s]-->
 
 [mysqld]
@@ -60,10 +60,18 @@ character-set-server = utf8
 log-error=$my_log/my_err.log
 long_query_time = 1 
 log-slow-queries = $my_log/slow.log
+max_binlog_size = 1G
+max_binlog_cache_size = 8M
 log-bin = $my_log/db_binlog
 # pid-file= $my_data/db.pid
 # socket = 
 max_connections = 800
+sort_buffer_size = 1M
+join_buffer_size = 8M
+key_buffer_size = 16M
+read_buffer_size = 256K
+read_rnd_buffer_size = 512K
+
 
 [mysqld_safe]
 EOF
