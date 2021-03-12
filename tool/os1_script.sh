@@ -34,7 +34,7 @@ function yh_ssh () {
 }
 
 #selinux optimize
-function yh_se (){
+function off_selinux (){
 	if [ `getenforce` == Disabled ]
 	then
 	action "已经关闭的selinux" /bin/false
@@ -44,9 +44,10 @@ function yh_se (){
 	action "关闭selinux" /bin/true
 	fi
 }
+off_selinux
 
 #iptables
-function yh_ipt (){
+function stop_iptables (){
 	/etc/init.d/iptables status >/dev/null 2>&1
 	if [ $? -eq 3 ]
 	then
@@ -57,9 +58,10 @@ function yh_ipt (){
 	action "防火墙关闭" /bin/true
 	fi
 }
+stop_iptables
 
 #crond software optimize: time synchronization
-function yh_cron (){
+function rsync_cron (){
 	grep -i "#crond-id-001" /var/spool/cron/root >/dev/null 2>&1
 	if [ $? -ne 0 ]
 	then 
@@ -67,16 +69,18 @@ function yh_cron (){
 		echo '00 * * * * /usr/sbin/ntpdate pool.ntp.org >/dev/null 2>&1' >>/var/spool/cron/root
 	fi
 }
+rsync_cron
 
 #update yum info
-function yh_yum (){
+function aliyun_yum (){
 	rm -f /etc/yum.repo/*
 	wget -q -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
 	wget -q -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-6.repo
 	
 }
+aliyun_yum
 
-function yh_sv () {
+function simplify_servvice () {
 if [ `chkconfig |grep 3:on |wc -l` -eq 5 ]
 then
 action "已经优化的最小化服务" /bin/false
@@ -85,9 +89,10 @@ action "最小化服务" /bin/true
 chkconfig |egrep -v "crond|sshd|network|rsyslog|sysstat" |awk '{print "chkconfig "$1 " off"}' |bash
 fi
 }
+simplify_servvice
 
 #History command optimization
-function yh_hist () {
+function his_command () {
 if [ `egrep "export HISTSIZE|export HISTFILESIZ" /etc/profile|wc -l ` -eq 2 ]
 then
 	action "已经优化过的历史命令" /bin/false
@@ -98,9 +103,10 @@ else
 	action "优化历史命令" /bin/true
 fi 
 }
+his_command
 
 #ssh time 
-function yh_tmout () {
+function conn_tmout () {
 	grep "export TMOUT" /etc/profile >>/dev/null 2>&1
 	if [ $? -eq 0 ]
 	then
@@ -111,9 +117,10 @@ function yh_tmout () {
 	action "连接超时优化" /bin/true
 fi
 }
+conn_tmout
 
 #change profile file info
-function yh_pf (){
+function terminal_color (){
 	grep "PS1" /etc/profile >>/dev/null 2>&1
 	if [ $? -ne 0 ]
 	then
@@ -127,8 +134,10 @@ function yh_pf (){
 	fi
 	source /etc/profile
 }
+
+terminal_color
 #kernel optimize
-function yh_kr () {
+function yh_kernel () {
 echo '*          -          nofile          65535' >>/etc/security/limits.conf
 cat >>/etc/sysctl.conf <<EOF
 net.ipv4.tcp_fin_timeout = 2
@@ -153,18 +162,4 @@ net.netfilter.nf_conntrack_tcp_timeout_close_wait = 60
 net.netfilter.nf_conntrack_tcp_timeout_fin_wait = 120
 EOF
 }
-
-function yh_set (){
-	yh_dir
-	yh_ssh
-	yh_se
-	yh_ipt
-	yh_cron
-	yh_yum
-	yh_pf
-	yh_kr
-	yh_sv
-	yh_hist
-	yh_tmout
-}
-yh_set
+yh_kernel ()
